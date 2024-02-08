@@ -1,0 +1,119 @@
+
+Programm 1 Evaluation: 
+
+
+-- program 1: quicksort (effiziente sortiermethode)
+[] ++ ys = ys                      -- konkat-fkt für leere listen, 
+(x : xs) ++ ys = x : (xs ++ ys)    -- liste (x:xs) mit ys konkat, dann x erstes element, dann der rest (xs ++ ys)
+
+filter f [] = []                   -- fkt filer: nimmt f und xs als argumente, filtert leere liste zu leerer liste
+filter f (x : xs)                  -- beginnt mit ersten element x der liste, bedingung erfüllt mit TRUE, dann x in ergebnisliste 
+	| f x = x : filter f xs        -- und restliche Liste xs rekursiv aufgerufen
+	| otherwise = filter f xs      -- andernfalls element irgnoriert und fkt auf rest der liste angewendet.
+	
+smaller p xs = filter (\x -> x < p) xs  -- smaller & bigger fkt verwenden filter-fkt um liste zu erstellen die nur elemente enthält die 
+bigger p xs = filter (\x -> x >= p) xs  -- kleiner bzw größer gleich als ein bestimmtes p sind. 
+
+qsort [] = []                 -- leere eingabe liste
+qsort (x:[]) = [x]            -- erste element ist pivot
+qsort (x:xs) = qsort (smaller x xs) ++ x : qsort (bigger x xs)    -- liste in smaller x:xs (werte die kleiner als x) und bigger x:xs (wetre                                                                   -- die größer gleich wert x) aufgeteilt, dann algo rekursiv auf beide                                                                       -- teile angewendet
+
+
+(a) Call-by-Value (CBV):
+Evaluate the argument [2] ++ [1]:
+
+[2] ++ [1] evaluates to [2, 1].
+Substitute the result into the qsort function:
+
+qsort ([2, 1])
+Apply the qsort recursive steps:
+
+qsort (smaller 2 [1]) ++ 2 : qsort (bigger 2 [1])
+qsort [] ++ 2 : qsort [1]
+[] ++ 2 : (qsort (smaller 1 [1]) ++ 1 : qsort (bigger 1 [1]))
+[] ++ 2 : (qsort [] ++ 1 : qsort [])
+[] ++ 2 : ( [] ++ 1 : [] )
+[2, 1]
+So, the final result using call-by-value is [2, 1].
+
+
+(b) Call-by-Name (CBN):
+Substitute the argument directly into the qsort function:
+
+qsort ([2] ++ [1])
+Apply the qsort recursive steps:
+
+qsort (smaller 2 ([1])) ++ 2 : qsort (bigger 2 ([1]))
+qsort (filter (\x -> x < 2) [1]) ++ 2 : qsort (filter (\x -> x >= 2) [1])
+qsort (filter (\x -> x < 2) [1]) ++ 2 : qsort []
+qsort [] ++ 2 : []
+[] ++ 2 : []
+[2]
+So, the final result using call-by-name is [2].
+
+
+
+Programm 2 Evaluation: 
+
+
+-- program 2
+double x = x + x   -- fk: x als Argument und gibt Ergebnis zurück, durch Verdoppeln x erhalten 
+
+take 0 _ = []   -- wenn zahl Null oder liste leer ist wird leere liste zurückgeg.
+take _ [] = []
+take n (x : xs) = x : take (n - 1) xs  -- erste Element x Liste an Ergebnisliste, und Fkt rekursiv auf Rest Liste (n - 1) angewendet.
+
+map f [] = []         -- f und eine Liste xs als Argumente
+map f (x : xs) = f x : map f xs  --  Fkt f auf jedes Element Liste xs, erstellt neue Liste, dietransformierten Elemente enthält.
+
+
+(a) Call-by-Value (CBV):
+Evaluate the argument map double [3 + 5, 7 + 8]:
+
+map double [3 + 5, 7 + 8]
+map double [8, 15]
+[double 8, double 15]
+[8 + 8, 15 + 15]
+[16, 30]
+Substitute the result into the take function:
+
+take 1 [16, 30]
+16 : take (1 - 1) [30]
+16 : take 0 [30]
+16 : []
+So, the final result using call-by-value is [16].
+
+
+(b) Call-by-Name (CBN):
+Substitute the argument directly into the take function:
+
+take 1 (map double [3 + 5, 7 + 8])
+Evaluate the argument of take lazily:
+
+take 1 (map double [3 + 5, 7 + 8])
+take 1 (double (3 + 5) : map double (7 + 8 : []))
+take 1 (8 : map double (7 + 8 : []))
+take 1 (8 : double (7 + 8) : map double [])
+take 1 (8 : 15 : map double [])
+take 1 (8 : 15 : [])
+take 1 [8, 15]
+8 : take (1 - 1) [15]
+8 : take 0 [15]
+8 : []
+So, the final result using call-by-name is [8].
+
+(c) Call-by-Need (CBNeed) or Lazy Evaluation:
+Substitute the argument directly into the take function:
+
+take 1 (map double [3 + 5, 7 + 8])
+Evaluate the argument of take lazily, only as needed:
+
+take 1 (map double [3 + 5, 7 + 8])
+take 1 (double (3 + 5) : map double (7 + 8 : []))
+take 1 (8 : map double (7 + 8 : []))
+take 1 (8 : double (7 + 8) : map double [])
+take 1 (8 : 15 : map double [])
+8 : take (1 - 1) [15]
+8 : take 0 [15]
+8 : []
+So, the final result using call-by-need (lazy evaluation) is also [8].
